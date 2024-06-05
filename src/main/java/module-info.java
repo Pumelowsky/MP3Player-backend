@@ -15,4 +15,5 @@ module server {
 
     exports com.mp3server;
     opens com.mp3server.Controllers to javafx.fxml;
+    opens com.mp3server.server to spring.core, spring.beans, spring.context;
 }
