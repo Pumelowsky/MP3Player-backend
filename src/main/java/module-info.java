@@ -13,7 +13,9 @@ module server {
     requires spring.boot.autoconfigure;
     requires spring.web;
 
+
     exports com.mp3server;
+    exports com.mp3server.server;
     opens com.mp3server.Controllers to javafx.fxml;
     opens com.mp3server.server to spring.core, spring.beans, spring.context;
 }

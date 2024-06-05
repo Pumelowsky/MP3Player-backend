@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.core.io.ResourceLoader;
 
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -46,6 +47,15 @@ class SongController {
         Resource resource = loadAsResource(filename);
         if (resource.exists()) {
             return ResponseEntity.ok().body(resource);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @GetMapping("/allsongs")
+    public ResponseEntity<List<Song>> getAllSongs() {
+        List<Song> songs = (List<Song>) songRepository.findAll();
+        if (!songs.isEmpty()) {
+            return ResponseEntity.ok().body(songs);
         } else {
             return ResponseEntity.notFound().build();
         }
