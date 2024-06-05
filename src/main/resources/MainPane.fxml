@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.Double?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.paint.CycleMethod?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="mainPane" prefHeight="500.0" prefWidth="800.0" style="-fx-background-color: linear-gradient(to bottom, #449ef6, #ffffff);" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mp3server.Controllers.MainPaneController">
+   <children>
+      <Label fx:id="songLabel" alignment="CENTER" layoutX="100.0" layoutY="20.0" prefHeight="115.0" prefWidth="600.0" text="MP3 Player">
+         <font>
+            <Font size="59.0" />
+         </font>
+         <textFill>
+            <LinearGradient endX="0" endY="1" startX="1" startY="0">
+               <stops>
+                  <Stop color="#ff0000" offset="0.0" />
+                  <Stop color="#ffff00" offset="0.5" />
+                  <Stop color="#00ff00" offset="1.0" />
+               </stops>
+            </LinearGradient>
+         </textFill>
+         <effect>
+            <DropShadow color="#000000" radius="15.0" />
+         </effect>
+      </Label>
+      <ProgressBar fx:id="songProgresBar" layoutY="150.0" prefHeight="18.0" prefWidth="600.0" progress="0.0" style="-fx-accent: #00ff00;" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" />
+      <Button fx:id="playButton" layoutX="150.0" layoutY="180.0" mnemonicParsing="false" onAction="#playSong" prefHeight="47.0" prefWidth="79.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Play">
+         <font>
+            <Font size="19.0" />
+         </font>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </Button>
+      <Button fx:id="pauseButton" layoutX="250.0" layoutY="180.0" mnemonicParsing="false" onAction="#pauseSong" prefHeight="47.0" prefWidth="79.0" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Pause">
+         <font>
+            <Font size="19.0" />
+         </font>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </Button>
+      <Button fx:id="resetSongButton" layoutX="350.0" layoutY="180.0" mnemonicParsing="false" onAction="#resetSong" prefHeight="47.0" prefWidth="79.0" style="-fx-background-color: #2196F3; -fx-text-fill: white;" text="Reset">
+         <font>
+            <Font size="19.0" />
+         </font>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </Button>
+      <Button fx:id="prevSongButton" layoutX="450.0" layoutY="180.0" mnemonicParsing="false" onAction="#playPrevSong" prefHeight="47.0" prefWidth="79.0" style="-fx-background-color: #FF9800; -fx-text-fill: white;" text="Prev">
+         <font>
+            <Font size="19.0" />
+         </font>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </Button>
+      <Button fx:id="nextSongButton" layoutX="550.0" layoutY="180.0" mnemonicParsing="false" onAction="#playNextSong" prefHeight="47.0" prefWidth="79.0" style="-fx-background-color: #9C27B0; -fx-text-fill: white;" text="Next">
+         <font>
+            <Font size="19.0" />
+         </font>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </Button>
+      <ComboBox fx:id="speedBox" layoutX="160.0" layoutY="276.0" onAction="#changeSpeed" prefHeight="28.0" prefWidth="150.0" value="1.0" style="-fx-background-color: #607D8B;">
+         <items>
+            <FXCollections fx:factory="observableArrayList">
+               <Double fx:value="0.5" />
+               <Double fx:value="0.75" />
+               <Double fx:value="1.0" />
+               <Double fx:value="1.25" />
+               <Double fx:value="1.5" />
+               <Double fx:value="1.75" />
+               <Double fx:value="2.0" />
+            </FXCollections>
+         </items>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </ComboBox>
+      <Slider fx:id="volumeSlider" layoutX="426.0" layoutY="266.0" prefHeight="47.0" prefWidth="300.0" showTickLabels="true" showTickMarks="true" style="-fx-control-inner-background: #757575;" value="50.0">
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </Slider>
+      <TableView fx:id="songTable" layoutX="50.0" layoutY="320.0" prefHeight="150.0" prefWidth="700.0">
+         <columns>
+            <TableColumn fx:id="songNameColumn" prefWidth="350.0" text="Song Name" />
+            <TableColumn fx:id="songDurationColumn" prefWidth="150.0" text="Duration" />
+            <TableColumn fx:id="songArtistColumn" prefWidth="200.0" text="Artist" />
+         </columns>
+      </TableView>
+      <Label layoutX="544.0" layoutY="246.0" text="Volume" textFill="#ffffff">
+         <font>
+            <Font size="19.0" />
+         </font>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </Label>
+      <Label layoutX="203.0" layoutY="246.0" text="Speed" textFill="#ffffff">
+         <font>
+            <Font size="19.0" />
+         </font>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
+         </effect>
+      </Label>
+   </children>
+</AnchorPane>
