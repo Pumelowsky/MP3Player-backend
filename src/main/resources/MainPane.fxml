@@ -76,18 +76,8 @@
             <InnerShadow color="#000000" radius="5.0" />
          </effect>
       </Button>
-      <ComboBox fx:id="speedBox" layoutX="160.0" layoutY="276.0" onAction="#changeSpeed" prefHeight="28.0" prefWidth="150.0" style="-fx-background-color: #607D8B;" value="1.0">
-         <items>
-            <FXCollections fx:factory="observableArrayList">
-               <Double fx:value="0.5" />
-               <Double fx:value="0.75" />
-               <Double fx:value="1.0" />
-               <Double fx:value="1.25" />
-               <Double fx:value="1.5" />
-               <Double fx:value="1.75" />
-               <Double fx:value="2.0" />
-            </FXCollections>
-         </items>
+      <ComboBox fx:id="speedBox" layoutX="160.0" layoutY="276.0" onAction="#changeSpeed" prefHeight="28.0" prefWidth="150.0" style="-fx-background-color: #607D8B;">
+
          <effect>
             <InnerShadow color="#000000" radius="5.0" />
          </effect>
