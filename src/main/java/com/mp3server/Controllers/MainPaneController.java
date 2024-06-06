@@ -1,7 +1,6 @@
 package com.mp3server.Controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mp3server.client.SongData;
 import com.mp3server.server.Song;
 import javafx.animation.ScaleTransition;
 import javafx.beans.value.ChangeListener;
@@ -11,15 +10,13 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Duration;
 import javazoom.jl.player.Player;
 
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.*;
 
 import javafx.scene.media.Media;
@@ -53,16 +50,16 @@ public class MainPaneController {
     private Label songLabel;
 
     @FXML
-    private TableView<Song> songTable;
+    private TableView<SongData> songTable;
 
     @FXML
-    private TableColumn<Song, String> songNameColumn;
+    private TableColumn<SongData, String> songNameColumn;
 
     @FXML
-    private TableColumn<Song, String> songDurationColumn;
+    private TableColumn<SongData, String> songDurationColumn;
 
     @FXML
-    private TableColumn<Song, String> songArtistColumn;
+    private TableColumn<SongData, String> songArtistColumn;
     @FXML
     private Label currentSongLabel;
     @FXML
@@ -92,7 +89,7 @@ public class MainPaneController {
     private final Object pauseLock = new Object();
 
     @FXML
-    public void initialize() {
+    public void initialize() throws Exception {
         // Ścieżka do folderu
         String folderPath = "src/main/java/com/mp3server/music";
 
@@ -103,6 +100,9 @@ public class MainPaneController {
         addScaleTransition(nextSongButton);
 
         addPulsingEffect(songLabel);
+        songNameColumn.setCellValueFactory(new PropertyValueFactory<>("tytul"));
+        songDurationColumn.setCellValueFactory(new PropertyValueFactory<>("duration"));
+        songArtistColumn.setCellValueFactory(new PropertyValueFactory<>("wykonawca"));
         //loadSongs();
 
         songs = new ArrayList<File>();
@@ -110,7 +110,11 @@ public class MainPaneController {
         directory = new File(folderPath);
 
         files = directory.listFiles();
-
+        try {
+            songTable.getItems().addAll(SongData.getAllSongs());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if(files != null) {
 
             for(File file : files) {
@@ -211,40 +215,4 @@ public class MainPaneController {
 
     }
 
-    @FXML
-    private List<Song> getAllSongs() throws IOException {
-        URL url = new URL(BASE_URL + "/allsongs");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.connect();
-
-        int responseCode = conn.getResponseCode();
-
-        if (responseCode != 200) {
-            throw new RuntimeException("HttpResponseCode: " + responseCode);
-        } else {
-            Scanner scanner = new Scanner(url.openStream());
-            StringBuilder inline = new StringBuilder();
-            while (scanner.hasNext()) {
-                inline.append(scanner.nextLine());
-            }
-            scanner.close();
-
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(inline.toString(), new TypeReference<List<Song>>() {});
-        }
-    }
-
-//    @FXML
-//    private void loadSongs() {
-//        try {
-//            songs = getAllSongs();
-//            ObservableList<Song> songList = FXCollections.observableArrayList(songs);
-//            songTable.setItems(songList);
-//            currentSongLabel.setText(songs.get(0).getTytul());
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 }

@@ -11,6 +11,7 @@ public class Song {
     private String tytul;
     private String album;
     private String file_name;
+    private String duration;
 
     public String getId() {
         return id;
@@ -50,5 +51,13 @@ public class Song {
 
     public void setFile_name(String file_name) {
         this.file_name = file_name;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
     }
 }
