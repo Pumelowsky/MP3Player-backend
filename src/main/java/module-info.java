@@ -16,9 +16,11 @@ module server {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;
     requires jlayer;
+    requires org.json;
 
     exports com.mp3server;
     exports com.mp3server.server;
     opens com.mp3server.Controllers to javafx.fxml, com.fasterxml.jackson.databind;
     opens com.mp3server.server to spring.core, spring.beans, spring.context, com.fasterxml.jackson.databind;
+    opens com.mp3server.client to spring.core, spring.beans, spring.context, com.fasterxml.jackson.databind, javafx.base;
 }

@@ -1,5 +1,6 @@
 package com.mp3server.Controllers;
 
+import com.mp3server.client.SongData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mp3server.server.Song;
@@ -11,12 +12,12 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Duration;
 import javazoom.jl.player.Player;
 
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -53,16 +54,16 @@ public class MainPaneController {
     private Label songLabel;
 
     @FXML
-    private TableView<Song> songTable;
+    private TableView<SongData> songTable;
 
     @FXML
-    private TableColumn<Song, String> songNameColumn;
+    private TableColumn<SongData, String> songNameColumn;
 
     @FXML
-    private TableColumn<Song, String> songDurationColumn;
+    private TableColumn<SongData, String> songDurationColumn;
 
     @FXML
-    private TableColumn<Song, String> songArtistColumn;
+    private TableColumn<SongData, String> songArtistColumn;
     @FXML
     private Label currentSongLabel;
     @FXML
@@ -92,7 +93,7 @@ public class MainPaneController {
     private final Object pauseLock = new Object();
 
     @FXML
-    public void initialize() {
+    public void initialize() throws Exception {
         // Ścieżka do folderu
         String folderPath = "src/main/java/com/mp3server/music";
 
@@ -103,6 +104,9 @@ public class MainPaneController {
         addScaleTransition(nextSongButton);
 
         addPulsingEffect(songLabel);
+        songNameColumn.setCellValueFactory(new PropertyValueFactory<>("tytul"));
+        songDurationColumn.setCellValueFactory(new PropertyValueFactory<>("duration"));
+        songArtistColumn.setCellValueFactory(new PropertyValueFactory<>("wykonawca"));
         //loadSongs();
 
         songs = new ArrayList<File>();
@@ -110,7 +114,11 @@ public class MainPaneController {
         directory = new File(folderPath);
 
         files = directory.listFiles();
-
+        try {
+            songTable.getItems().addAll(SongData.getAllSongs());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if(files != null) {
 
             for(File file : files) {
