@@ -1,5 +1,6 @@
 package com.mp3server.Controllers;
 
+import com.mp3server.client.SongData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mp3server.server.Song;
@@ -11,12 +12,12 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Duration;
 import javazoom.jl.player.Player;
 
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -53,16 +54,16 @@ public class MainPaneController {
     private Label songLabel;
 
     @FXML
-    private TableView<Song> songTable;
+    private TableView<SongData> songTable;
 
     @FXML
-    private TableColumn<Song, String> songNameColumn;
+    private TableColumn<SongData, String> songNameColumn;
 
     @FXML
-    private TableColumn<Song, String> songDurationColumn;
+    private TableColumn<SongData, String> songDurationColumn;
 
     @FXML
-    private TableColumn<Song, String> songArtistColumn;
+    private TableColumn<SongData, String> songArtistColumn;
     @FXML
     private Label currentSongLabel;
     @FXML
@@ -75,7 +76,7 @@ public class MainPaneController {
     private File[] files;
     private ArrayList<File> songs;
     private int songNumber;
-    private int[] speeds = {25,50,75,100,125,150,175,200};
+    private double[] speeds = {0.25,0.5,0.75,1,1.25,1.5,1.75,2};
     private Timer timer;
     private TimerTask task;
     private boolean running;
@@ -92,7 +93,7 @@ public class MainPaneController {
     private final Object pauseLock = new Object();
 
     @FXML
-    public void initialize() {
+    public void initialize() throws Exception {
         // Ścieżka do folderu
         String folderPath = "src/main/java/com/mp3server/music";
 
@@ -103,6 +104,9 @@ public class MainPaneController {
         addScaleTransition(nextSongButton);
 
         addPulsingEffect(songLabel);
+        songNameColumn.setCellValueFactory(new PropertyValueFactory<>("tytul"));
+        songDurationColumn.setCellValueFactory(new PropertyValueFactory<>("duration"));
+        songArtistColumn.setCellValueFactory(new PropertyValueFactory<>("wykonawca"));
         //loadSongs();
 
         songs = new ArrayList<File>();
@@ -110,7 +114,11 @@ public class MainPaneController {
         directory = new File(folderPath);
 
         files = directory.listFiles();
-
+        try {
+            songTable.getItems().addAll(SongData.getAllSongs());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if(files != null) {
 
             for(File file : files) {
@@ -129,7 +137,7 @@ public class MainPaneController {
 
         for(int i = 0; i < speeds.length; i++) {
 
-            speedBox.getItems().add(Integer.toString(speeds[i])+"%");
+            speedBox.getItems().add(Double.toString(speeds[i]));
         }
 
         speedBox.setOnAction(this::changeSpeed);
@@ -139,7 +147,7 @@ public class MainPaneController {
             @Override
             public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2) {
 
-                //mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
+                mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
             }
         });
 
@@ -173,22 +181,68 @@ public class MainPaneController {
 
     @FXML
     private void playSong() {
+        beginTimmer();
+        changeSpeed(null);
+        mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
+        if(speedBox.getValue()==null){
+            mediaPlayer.setRate(1);
+        }else{
+            mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
+        }
         mediaPlayer.play();
     }
 
     @FXML
     private void pauseSong() {
+        cancelTimmer();
         mediaPlayer.pause();
     }
 
     @FXML
     private void resetSong() {
+        songProgresBar.setProgress(0);
         mediaPlayer.seek(Duration.seconds(0));
     }
 
     @FXML
     private void playPrevSong() {
-        // Kod obsługi przycisku Prev
+        if(songNumber>0){
+            songNumber--;
+            mediaPlayer.stop();
+
+            songProgresBar.setProgress(0);
+
+            media=new Media(songs.get(songNumber).toURI().toString());
+            mediaPlayer = new MediaPlayer(media);
+            songLabel.setText(songs.get(songNumber).getName());
+
+            mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
+            if(speedBox.getValue()==null){
+                mediaPlayer.setRate(1);
+            }else{
+                mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
+            }
+
+            mediaPlayer.play();
+        }else {
+            songNumber=songs.size()-1;
+            mediaPlayer.stop();
+
+            songProgresBar.setProgress(0);
+
+            media=new Media(songs.get(songNumber).toURI().toString());
+            mediaPlayer = new MediaPlayer(media);
+            songLabel.setText(songs.get(songNumber).getName());
+
+            mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
+            if(speedBox.getValue()==null){
+                mediaPlayer.setRate(1);
+            }else{
+                mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
+            }
+
+            mediaPlayer.play();
+        }
     }
 
     @FXML
@@ -196,19 +250,74 @@ public class MainPaneController {
         if(songNumber<songs.size()-1){
             songNumber++;
             mediaPlayer.stop();
+
+            songProgresBar.setProgress(0);
+
+            media=new Media(songs.get(songNumber).toURI().toString());
+            mediaPlayer = new MediaPlayer(media);
+            songLabel.setText(songs.get(songNumber).getName());
+
+            mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
+            if(speedBox.getValue()==null){
+                mediaPlayer.setRate(1);
+            }else{
+                mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
+            }
+
+            mediaPlayer.play();
+        }else {
+            songNumber=0;
+            mediaPlayer.stop();
+
+            songProgresBar.setProgress(0);
+
+            media=new Media(songs.get(songNumber).toURI().toString());
+            mediaPlayer = new MediaPlayer(media);
+            songLabel.setText(songs.get(songNumber).getName());
+
+            mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
+            if(speedBox.getValue()==null){
+                mediaPlayer.setRate(1);
+            }else{
+                mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
+            }
+
+            mediaPlayer.play();
         }
     }
 
     @FXML
     private void changeSpeed(ActionEvent event) {
+        if(speedBox.getValue()==null){
+            mediaPlayer.setRate(1);
+        }else{
+            mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
+        }
 
     }
 
     public void beginTimmer(){
+        timer = new Timer();
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                running=true;
+                double current = mediaPlayer.getCurrentTime().toSeconds();
+                double end = media.getDuration().toSeconds();
+                songProgresBar.setProgress(current/end);
+
+                if(current/end==1){
+                    cancelTimmer();
+                }
+            }
+        };
+
+        timer.scheduleAtFixedRate(task,1000,1000);
 
     }
     public void cancelTimmer(){
-
+        running=false;
+        timer.cancel();
     }
 
     @FXML
@@ -235,16 +344,5 @@ public class MainPaneController {
         }
     }
 
-//    @FXML
-//    private void loadSongs() {
-//        try {
-//            songs = getAllSongs();
-//            ObservableList<Song> songList = FXCollections.observableArrayList(songs);
-//            songTable.setItems(songList);
-//            currentSongLabel.setText(songs.get(0).getTytul());
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+
 }
