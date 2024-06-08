@@ -1,102 +1,59 @@
 package com.mp3server.Controllers;
 
 import com.mp3server.client.SongData;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mp3server.server.Song;
 import javafx.animation.ScaleTransition;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Duration;
-import javazoom.jl.player.Player;
-
-
-import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
-
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
 public class MainPaneController {
-
     @FXML
     private Button playButton;
-
     @FXML
     private Button pauseButton;
-
     @FXML
     private Button resetSongButton;
-
     @FXML
     private Button prevSongButton;
-
     @FXML
     private Button nextSongButton;
-
     @FXML
     private ComboBox<String> speedBox;
-
     @FXML
     private Slider volumeSlider;
-
-
     @FXML
     private Label songLabel;
-
     @FXML
     private TableView<SongData> songTable;
-
     @FXML
     private TableColumn<SongData, String> songNameColumn;
-
     @FXML
     private TableColumn<SongData, String> songDurationColumn;
-
     @FXML
     private TableColumn<SongData, String> songArtistColumn;
     @FXML
     private Label currentSongLabel;
     @FXML
     private ProgressBar songProgresBar;
+    @FXML
+    private Label wykonawcaLabel;
 
     private Media media;
     private MediaPlayer mediaPlayer;
 
-    private File directory;
-    private File[] files;
-    private ArrayList<File> songs;
     private int songNumber;
     private double[] speeds = {0.25,0.5,0.75,1,1.25,1.5,1.75,2};
-    private Timer timer;
-    private TimerTask task;
-    private boolean running;
 
-
-
-    //private List<Song> songs;
-    private Thread playerThread;
-    private Player player = null;
-    private File currentSong = null;
-    private int currentSongIndex;
     private static final String BASE_URL = "http://localhost:8080";
-    private boolean paused = true;
-    private final Object pauseLock = new Object();
 
     @FXML
     public void initialize() throws Exception {
-        // Ścieżka do folderu
-        String folderPath = "src/main/java/com/mp3server/music";
-
         addScaleTransition(playButton);
         addScaleTransition(pauseButton);
         addScaleTransition(resetSongButton);
@@ -107,46 +64,36 @@ public class MainPaneController {
         songNameColumn.setCellValueFactory(new PropertyValueFactory<>("tytul"));
         songDurationColumn.setCellValueFactory(new PropertyValueFactory<>("duration"));
         songArtistColumn.setCellValueFactory(new PropertyValueFactory<>("wykonawca"));
-        //loadSongs();
 
-        songs = new ArrayList<File>();
-
-        directory = new File(folderPath);
-
-        files = directory.listFiles();
         try {
             songTable.getItems().addAll(SongData.getAllSongs());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(files != null) {
 
-            for(File file : files) {
-
-                songs.add(file);
-            }
-        }else{
-            System.err.println("Nie znaleziono nic w folderze music");
-        }
-
-
-        media = new Media(songs.get(songNumber).toURI().toString());
+        media = new Media(BASE_URL + "/play/" + songTable.getItems().get(songNumber).getFile_name().toString());
         mediaPlayer = new MediaPlayer(media);
 
-        songLabel.setText(songs.get(songNumber).getName());
+        mediaPlayer.currentTimeProperty().addListener(ov -> {
+            double total = mediaPlayer.getTotalDuration().toMillis();
+            double current = mediaPlayer.getCurrentTime().toMillis();
+            currentSongLabel.setText(getTimeString(current) + " / " + getTimeString(total));
+            songProgresBar.setProgress(current/total);
+        });
 
-        for(int i = 0; i < speeds.length; i++) {
+        songLabel.setText(songTable.getItems().get(songNumber).getTytul());
+        wykonawcaLabel.setText(songTable.getItems().get(songNumber).getWykonawca());
+        currentSongLabel.setText(getTimeString(mediaPlayer.getCurrentTime().toMillis()));
 
+        for (int i = 0; i < speeds.length; i++) {
             speedBox.getItems().add(Double.toString(speeds[i]));
         }
 
         speedBox.setOnAction(this::changeSpeed);
 
         volumeSlider.valueProperty().addListener(new ChangeListener<Number>() {
-
             @Override
             public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2) {
-
                 mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
             }
         });
@@ -181,12 +128,11 @@ public class MainPaneController {
 
     @FXML
     private void playSong() {
-        beginTimmer();
         changeSpeed(null);
         mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
-        if(speedBox.getValue()==null){
+        if (speedBox.getValue()==null) {
             mediaPlayer.setRate(1);
-        }else{
+        } else {
             mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
         }
         mediaPlayer.play();
@@ -194,8 +140,12 @@ public class MainPaneController {
 
     @FXML
     private void pauseSong() {
-        cancelTimmer();
         mediaPlayer.pause();
+        mediaPlayer.currentTimeProperty().addListener(ov -> {
+            double total = mediaPlayer.getTotalDuration().toMillis();
+            double current = mediaPlayer.getCurrentTime().toMillis();
+            currentSongLabel.setText(getTimeString(current) + " / " + getTimeString(total));
+        });
     }
 
     @FXML
@@ -212,137 +162,132 @@ public class MainPaneController {
 
             songProgresBar.setProgress(0);
 
-            media=new Media(songs.get(songNumber).toURI().toString());
+            media=new Media(BASE_URL + "/play/" + songTable.getItems().get(songNumber).getFile_name().toString());
             mediaPlayer = new MediaPlayer(media);
-            songLabel.setText(songs.get(songNumber).getName());
+            songLabel.setText(songTable.getItems().get(songNumber).getTytul());
+            wykonawcaLabel.setText(songTable.getItems().get(songNumber).getWykonawca());
+            currentSongLabel.setText(getTimeString(mediaPlayer.getCurrentTime().toMillis()));
 
             mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
-            if(speedBox.getValue()==null){
+            if (speedBox.getValue()==null) {
                 mediaPlayer.setRate(1);
-            }else{
+            } else {
                 mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
             }
 
             mediaPlayer.play();
-        }else {
-            songNumber=songs.size()-1;
+            mediaPlayer.currentTimeProperty().addListener(ov -> {
+                double total = mediaPlayer.getTotalDuration().toMillis();
+                double current = mediaPlayer.getCurrentTime().toMillis();
+                currentSongLabel.setText(getTimeString(current) + " / " + getTimeString(total));
+                songProgresBar.setProgress(current/total);
+            });
+        } else {
+            songNumber=songTable.getItems().size()-1;
             mediaPlayer.stop();
 
             songProgresBar.setProgress(0);
 
-            media=new Media(songs.get(songNumber).toURI().toString());
+            media=new Media(BASE_URL + "/play/" + songTable.getItems().get(songNumber).getFile_name().toString());
             mediaPlayer = new MediaPlayer(media);
-            songLabel.setText(songs.get(songNumber).getName());
+            songLabel.setText(songTable.getItems().get(songNumber).getTytul());
+            wykonawcaLabel.setText(songTable.getItems().get(songNumber).getWykonawca());
+            currentSongLabel.setText(getTimeString(mediaPlayer.getCurrentTime().toMillis()));
 
             mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
-            if(speedBox.getValue()==null){
+            if (speedBox.getValue()==null) {
                 mediaPlayer.setRate(1);
-            }else{
+            } else {
                 mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
             }
 
             mediaPlayer.play();
+            mediaPlayer.currentTimeProperty().addListener(ov -> {
+                double total = mediaPlayer.getTotalDuration().toMillis();
+                double current = mediaPlayer.getCurrentTime().toMillis();
+                currentSongLabel.setText(getTimeString(current) + " / " + getTimeString(total));
+                songProgresBar.setProgress(current/total);
+            });
         }
     }
 
     @FXML
     private void playNextSong() {
-        if(songNumber<songs.size()-1){
+        if(songNumber<songTable.getItems().size()-1){
             songNumber++;
             mediaPlayer.stop();
 
             songProgresBar.setProgress(0);
 
-            media=new Media(songs.get(songNumber).toURI().toString());
+            media=new Media(BASE_URL + "/play/" + songTable.getItems().get(songNumber).getFile_name().toString());
             mediaPlayer = new MediaPlayer(media);
-            songLabel.setText(songs.get(songNumber).getName());
+            songLabel.setText(songTable.getItems().get(songNumber).getTytul());
+            wykonawcaLabel.setText(songTable.getItems().get(songNumber).getWykonawca());
+            currentSongLabel.setText(getTimeString(mediaPlayer.getCurrentTime().toMillis()));
 
             mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
-            if(speedBox.getValue()==null){
+            if (speedBox.getValue()==null) {
                 mediaPlayer.setRate(1);
-            }else{
+            } else {
                 mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
             }
 
             mediaPlayer.play();
-        }else {
+            mediaPlayer.currentTimeProperty().addListener(ov -> {
+                double total = mediaPlayer.getTotalDuration().toMillis();
+                double current = mediaPlayer.getCurrentTime().toMillis();
+                currentSongLabel.setText(getTimeString(current) + " / " + getTimeString(total));
+                songProgresBar.setProgress(current/total);
+            });
+        } else {
             songNumber=0;
             mediaPlayer.stop();
 
             songProgresBar.setProgress(0);
 
-            media=new Media(songs.get(songNumber).toURI().toString());
+            media=new Media(BASE_URL + "/play/" + songTable.getItems().get(songNumber).getFile_name().toString());
             mediaPlayer = new MediaPlayer(media);
-            songLabel.setText(songs.get(songNumber).getName());
+            songLabel.setText(songTable.getItems().get(songNumber).getTytul());
+            wykonawcaLabel.setText(songTable.getItems().get(songNumber).getWykonawca());
+            currentSongLabel.setText(getTimeString(mediaPlayer.getCurrentTime().toMillis()));
 
             mediaPlayer.setVolume(volumeSlider.getValue() * 0.01);
-            if(speedBox.getValue()==null){
+            if (speedBox.getValue()==null) {
                 mediaPlayer.setRate(1);
-            }else{
+            } else {
                 mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
             }
 
             mediaPlayer.play();
+            mediaPlayer.currentTimeProperty().addListener(ov -> {
+                double total = mediaPlayer.getTotalDuration().toMillis();
+                double current = mediaPlayer.getCurrentTime().toMillis();
+                currentSongLabel.setText(getTimeString(current) + " / " + getTimeString(total));
+                songProgresBar.setProgress(current/total);
+            });
         }
     }
 
     @FXML
     private void changeSpeed(ActionEvent event) {
-        if(speedBox.getValue()==null){
+        if (speedBox.getValue()==null) {
             mediaPlayer.setRate(1);
-        }else{
+        } else {
             mediaPlayer.setRate(Double.parseDouble(speedBox.getValue()));
         }
-
     }
 
-    public void beginTimmer(){
-        timer = new Timer();
-        task = new TimerTask() {
-            @Override
-            public void run() {
-                running=true;
-                double current = mediaPlayer.getCurrentTime().toSeconds();
-                double end = media.getDuration().toSeconds();
-                songProgresBar.setProgress(current/end);
-
-                if(current/end==1){
-                    cancelTimmer();
-                }
-            }
-        };
-
-        timer.scheduleAtFixedRate(task,1000,1000);
-
-    }
-    public void cancelTimmer(){
-        running=false;
-        timer.cancel();
+    public static String formatTime(double time) {
+        int t = (int)time;
+        if (t > 9) { return String.valueOf(t); }
+        return "0" + t;
     }
 
-    @FXML
-    private List<Song> getAllSongs() throws IOException {
-        URL url = new URL(BASE_URL + "/allsongs");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.connect();
-
-        int responseCode = conn.getResponseCode();
-
-        if (responseCode != 200) {
-            throw new RuntimeException("HttpResponseCode: " + responseCode);
-        } else {
-            Scanner scanner = new Scanner(url.openStream());
-            StringBuilder inline = new StringBuilder();
-            while (scanner.hasNext()) {
-                inline.append(scanner.nextLine());
-            }
-            scanner.close();
-
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(inline.toString(), new TypeReference<List<Song>>() {});
-        }
+    public static String getTimeString(double millis) {
+        millis /= 1000;
+        String s = formatTime(millis % 60);
+        millis /= 60;
+        String m = formatTime(millis % 60);
+        return  m + ":" + s;
     }
-
-
 }

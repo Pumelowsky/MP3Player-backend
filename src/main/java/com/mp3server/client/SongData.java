@@ -17,6 +17,7 @@ public class SongData {
     private String album;
     private String file_name;
     private String duration;
+    private static final String BASE_URL = "http://localhost:8080";
 
     public String getId() {
         return id;
@@ -67,7 +68,7 @@ public class SongData {
     }
 
     public static List<SongData> getAllSongs() throws Exception {
-        String url = "http://localhost:8080/allsongs";
+        String url = BASE_URL + "/allsongs";
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -95,7 +96,7 @@ public class SongData {
             songData.duration = jsonObject.getString("duration");
             songDataList.add(songData);
         }
-        System.out.println(songDataList.size());
+
         return songDataList;
     }
 }

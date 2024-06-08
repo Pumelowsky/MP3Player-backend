@@ -18,9 +18,9 @@
 
 <AnchorPane fx:id="mainPane" prefHeight="500.0" prefWidth="800.0" style="-fx-background-color: linear-gradient(to bottom, #449ef6, #ffffff);" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mp3server.Controllers.MainPaneController">
    <children>
-      <Label fx:id="songLabel" alignment="CENTER" layoutX="100.0" layoutY="20.0" prefHeight="115.0" prefWidth="600.0" text="MP3 Player">
+      <Label fx:id="songLabel" alignment="CENTER" layoutX="100.0" layoutY="10.0" prefHeight="115.0" prefWidth="600.0" text="MP3 Player">
          <font>
-            <Font size="59.0" />
+            <Font size="40.0" />
          </font>
          <textFill>
             <LinearGradient endX="0" endY="1" startX="1" startY="0">
@@ -33,6 +33,14 @@
          </textFill>
          <effect>
             <DropShadow color="#000000" radius="15.0" />
+         </effect>
+      </Label>
+      <Label fx:id="wykonawcaLabel" alignment="CENTER" layoutX="100.0" layoutY="80.0" prefHeight="60.0" prefWidth="600.0" textFill="#FFFFFF" text="Wykonawca">
+         <font>
+            <Font size="20.0" />
+         </font>
+         <effect>
+            <InnerShadow color="#000000" radius="5.0" />
          </effect>
       </Label>
       <ProgressBar fx:id="songProgresBar" layoutY="150.0" prefHeight="18.0" prefWidth="600.0" progress="0.0" style="-fx-accent: #00ff00;" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" />
@@ -110,7 +118,7 @@
             <InnerShadow color="#000000" radius="5.0" />
          </effect>
       </Label>
-      <Label fx:id="currentSongLabel" alignment="CENTER" layoutX="99.0" layoutY="121.0" prefHeight="28.0" prefWidth="600.0" textFill="#ffffff">
+      <Label fx:id="currentSongLabel" alignment="CENTER" layoutX="99.0" layoutY="121.0" prefHeight="28.0" prefWidth="600.0" textFill="#ffffff" text="help">
          <font>
             <Font size="19.0" />
          </font>

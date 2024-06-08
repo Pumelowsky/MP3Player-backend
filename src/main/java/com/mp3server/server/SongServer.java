@@ -63,7 +63,7 @@ class SongController {
 
     private Resource loadAsResource(String filename) {
         try {
-            return new UrlResource("file:./songs/" + filename);
+            return new UrlResource("file:./music/" + filename);
         } catch (MalformedURLException e) {
             throw new RuntimeException("Nie mogłem załadować pliku", e);
         }

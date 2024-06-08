@@ -1,4 +1,4 @@
-package com.mp3server;
+package com.mp3server.client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -18,6 +18,5 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.setTitle("Nasza MP3");
         stage.show();
-
     }
 }
